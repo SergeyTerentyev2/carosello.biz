@@ -17,7 +17,7 @@
 // gemini-2.5-pro is the current GA model; Google's docs list its retirement
 // as no earlier than Oct 16, 2026 — check https://ai.google.dev/gemini-api/docs/deprecations
 // occasionally and swap this if needed (e.g. to "gemini-3.1-pro-preview").
-const MODEL = "gemini-1.5-pro";
+const MODEL = "models/gemini-2.0-flash";
 const API_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
 
 const SYSTEM_PROMPT = `Sei l'assistente per i contenuti social di investire.biz, piattaforma fintech italiana (forecaster terminal).
