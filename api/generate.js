@@ -2,8 +2,8 @@
 // Gemini API key never reaches the browser. Deployed at POST /api/generate.
 
 // OTTIMIZZAZIONE: Usiamo gemini-2.0-flash per la massima velocità ed evitare il timeout di Vercel
-const MODEL = "models/gemini-2.0-flash";
-const API_BASE = "[https://generativelanguage.googleapis.com/v1beta/models](https://generativelanguage.googleapis.com/v1beta/models)";
+const MODEL = "gemini-2.0-flash";
+const API_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
 
 const SYSTEM_PROMPT = `Sei l'assistente per i contenuti social di investire.biz, piattaforma fintech italiana (forecaster terminal).
 Il tuo compito: a partire da una ricerca gia' fatta su un argomento finanziario/economico, scrivere il testo per un carosello Instagram/TikTok.
