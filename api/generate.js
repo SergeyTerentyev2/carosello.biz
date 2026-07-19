@@ -1,24 +1,9 @@
 // Serverless function (Vercel Node runtime). Runs ONLY on the server: the
 // Gemini API key never reaches the browser. Deployed at POST /api/generate.
-//
-// Flow, in two calls (Gemini does not allow combining Google Search grounding
-// with strict JSON-schema output in a single request):
-//   1) "Research" call — Gemini + Google Search grounding gathers real,
-//      current facts about the topic and returns the sources it actually used.
-//   2) "Write" call — Gemini (no tools, forced JSON via responseSchema) turns
-//      that research into the exact slide structure the frontend renders.
-//
-// Required env var: GEMINI_API_KEY (Google AI Studio: https://aistudio.google.com/app/apikey)
-// Optional env var: ACCESS_CODE — if set, requests must send it in the
-// "x-access-code" header. Use this on a public deployment so random visitors
-// can't run up your Gemini bill just by finding the URL.
 
-// gemini-1.5-pro is retired (no longer served by the API as of 2026).
-// gemini-2.5-pro is the current GA model; Google's docs list its retirement
-// as no earlier than Oct 16, 2026 — check https://ai.google.dev/gemini-api/docs/deprecations
-// occasionally and swap this if needed (e.g. to "gemini-3.1-pro-preview").
-const MODEL = "models/gemini-flash-latest";
-const API_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
+// OTTIMIZZAZIONE: Usiamo gemini-2.0-flash per la massima velocità ed evitare il timeout di Vercel
+const MODEL = "models/gemini-2.0-flash";
+const API_BASE = "[https://generativelanguage.googleapis.com/v1beta/models](https://generativelanguage.googleapis.com/v1beta/models)";
 
 const SYSTEM_PROMPT = `Sei l'assistente per i contenuti social di investire.biz, piattaforma fintech italiana (forecaster terminal).
 Il tuo compito: a partire da una ricerca gia' fatta su un argomento finanziario/economico, scrivere il testo per un carosello Instagram/TikTok.
@@ -192,7 +177,7 @@ Scrivi una sintesi in italiano (10-15 frasi) con i fatti e i numeri piu rilevant
     const sources = extractSources(researchResp);
 
     if (!research) {
-      throw new Error("La ricerca non ha prodotto risultati utilizzabili. Riprova con un argomento piu' specifico.");
+      throw new Error("La ricerca non ha prodotto risultati utilizzabili (risposta vuota dal modello). Riprova con un argomento piu' specifico.");
     }
 
     // Step 2: turn the grounded research into the exact slide JSON structure.
@@ -212,7 +197,7 @@ Scrivi ora il carosello completo seguendo esattamente lo schema JSON richiesto.`
         contents: [{ role: "user", parts: [{ text: writePrompt }] }],
         systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
         generationConfig: {
-          temperature: 0.8,
+          temperature: 0.3, // OTTIMIZZAZIONE: Abbassata da 0.8 per la massima velocità nella generazione JSON
           maxOutputTokens: 3072,
           responseMimeType: "application/json",
           responseSchema: SLIDE_SCHEMA,
@@ -220,19 +205,28 @@ Scrivi ora il carosello completo seguendo esattamente lo schema JSON richiesto.`
       },
       apiKey
     );
-    const jsonText = extractText(writeResp);
+    
+    let jsonText = extractText(writeResp);
+
+    // PROTEZIONE: Se la stringa è vuota (es. per filtri di sicurezza di Gemini), blocca prima del parsing
+    if (!jsonText) {
+      throw new Error("Il modello ha restituito un testo vuoto. L'argomento potrebbe aver attivato i filtri di sicurezza di Google.");
+    }
+
+    // DOPPIA SICUREZZA: Rimuove eventuali tag markdown ```json se presenti per errore
+    jsonText = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
 
     let parsed;
     try {
       parsed = JSON.parse(jsonText);
     } catch {
       const match = jsonText.match(/\{[\s\S]*\}/);
-      if (!match) throw new Error("Risposta del modello non in formato JSON valido.");
+      if (!match) throw new Error("Risposta del modello non convertibile in formato JSON.");
       parsed = JSON.parse(match[0]);
     }
 
     if (!parsed || !Array.isArray(parsed.slides) || !parsed.slides.length) {
-      throw new Error("Il modello non ha restituito nessuna slide.");
+      throw new Error("Il modello non ha restituito nessuna slide valida.");
     }
 
     res.status(200).json({ slides: parsed.slides });
