@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Generatore Caroselli — investire.biz</title>
+<style>
+  :root {
+    --indigo: #18113C;
+    --verde: #1BC376;
+    --bianco: #F5F4FC;
+    --lavanda: #AAA2CA;
+    --red: #D12E53;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: var(--bianco);
+    color: var(--indigo);
+    min-height: 100vh;
+  }
+  .wrap {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 28px 18px 60px;
+  }
+  .brand {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+  .brand-mark {
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--indigo);
+  }
+  .brand-mark span { color: var(--verde); }
+  h1 {
+    font-size: 20px;
+    font-weight: 800;
+    margin: 0 0 24px;
+    letter-spacing: -0.01em;
+  }
+  .card {
+    background: #fff;
+    border: 1px solid #E4E1F2;
+    border-radius: 20px;
+    padding: 22px;
+    box-shadow: 0 1px 3px rgba(24, 17, 60, 0.06);
+  }
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--indigo);
+    opacity: 0.75;
+    margin: 16px 0 6px;
+  }
+  label:first-of-type { margin-top: 0; }
+  input[type="text"],
+  input[type="password"],
+  textarea {
+    width: 100%;
+    border: 1px solid #DAD5EE;
+    border-radius: 12px;
+    padding: 11px 13px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--indigo);
+    outline: none;
+    resize: none;
+    background: #fff;
+  }
+  input[type="text"]:focus,
+  input[type="password"]:focus,
+  textarea:focus { border-color: var(--verde); }
+  input[type="file"] { font-size: 12px; width: 100%; }
+  .upload-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 4px;
+  }
+  .upload-box { flex: 1; min-width: 0; }
+  .upload-box label { margin-top: 0; }
+  .hint-small {
+    font-size: 11px;
+    color: var(--indigo);
+    opacity: 0.55;
+    margin-top: 4px;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 18px;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .btn:disabled { opacity: 0.6; cursor: default; }
+  .btn-primary { background: var(--verde); color: #fff; width: 100%; margin-top: 22px; }
+  .btn-primary.is-loading { opacity: 0.75; }
+  .btn-ghost {
+    background: #fff;
+    color: var(--indigo);
+    border: 1px solid #DAD5EE;
+  }
+  .btn-dark { background: var(--indigo); color: #fff; }
+  .btn-small { padding: 9px 16px; font-size: 13px; }
+  .btn-text { background: none; color: var(--indigo); opacity: 0.6; padding: 8px; width: 100%; margin-top: 8px; }
+  .error-msg {
+    color: var(--red);
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: 14px;
+    text-align: center;
+  }
+  #viewer-panel .card { padding: 18px; }
+  .slide-frame {
+    width: 100%;
+    aspect-ratio: 1080 / 1350;
+    border-radius: 16px;
+    overflow: hidden;
+    background: var(--indigo);
+    border: 1px solid #E4E1F2;
+  }
+  .slide-frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .dots { display: flex; justify-content: center; gap: 6px; margin: 14px 0 6px; flex-wrap: wrap; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(170,162,202,0.55); cursor: pointer; }
+  .dot.active { background: var(--verde); }
+  .nav-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 6px;
+  }
+  .nav-row .btn { padding: 8px 14px; }
+  #slide-counter { font-size: 12px; opacity: 0.7; min-width: 96px; text-align: center; }
+  .export-row { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+  .export-row .btn { flex: 1; min-width: 140px; margin-top: 0; }
+  .hint {
+    font-size: 12px;
+    font-weight: 600;
+    opacity: 0.75;
+    text-align: center;
+    margin: 16px auto 0;
+    max-width: 340px;
+  }
+  .export-single {
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .export-preview { width: 220px; border-radius: 12px; border: 1px solid #E4E1F2; box-shadow: 0 4px 14px rgba(24,17,60,0.12); }
+  .export-all {
+    margin-top: 14px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    justify-content: center;
+  }
+  .export-all-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+  }
+  .export-all-item img { width: 120px; border-radius: 10px; border: 1px solid #E4E1F2; }
+  .export-all-item span { font-size: 11px; font-weight: 600; color: var(--indigo); opacity: 0.7; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="brand"><span class="brand-mark">investire<span>.biz</span></span></div>
+    <h1>Generatore Caroselli</h1>
+
+    <section id="form-panel" class="card">
+      <label for="topic-input">Argomento del carosello</label>
+      <input id="topic-input" type="text" placeholder="Es. Perché i tassi reali sono ai massimi da due anni" />
+
+      <label for="extra-input">Dati o contesto extra (opzionale)</label>
+      <textarea id="extra-input" rows="3" placeholder="Numeri, link, angolo particolare da includere..."></textarea>
+
+      <div class="upload-row">
+        <div class="upload-box">
+          <label for="cover-input">Immagine copertina</label>
+          <input id="cover-input" type="file" accept="image/*" />
+        </div>
+        <div class="upload-box">
+          <label for="bg-input">Filigrana sfondo</label>
+          <input id="bg-input" type="file" accept="image/*" />
+        </div>
+      </div>
+
+      <label for="access-input">Codice di accesso (se richiesto)</label>
+      <input id="access-input" type="password" placeholder="Lascia vuoto se non ne hai uno" />
+      <p class="hint-small">Presente solo se chi ha pubblicato questo strumento ha impostato una protezione.</p>
+
+      <button id="generate-btn" class="btn btn-primary">
+        <span class="btn-label">Genera carosello</span>
+      </button>
+      <p id="error-msg" class="error-msg" hidden></p>
+    </section>
+
+    <section id="viewer-panel" class="card" hidden>
+      <div class="slide-frame">
+        <img id="slide-preview" alt="Anteprima slide" />
+      </div>
+      <div id="dots" class="dots"></div>
+      <div class="nav-row">
+        <button id="prev-btn" class="btn btn-ghost">‹</button>
+        <span id="slide-counter"></span>
+        <button id="next-btn" class="btn btn-ghost">›</button>
+      </div>
+      <div class="export-row">
+        <button id="export-current-btn" class="btn btn-ghost">Scarica questa slide</button>
+        <button id="export-all-btn" class="btn btn-primary" style="margin-top:0">Scarica tutte le slide</button>
+      </div>
+      <p id="export-hint" class="hint" hidden>
+        Immagine pronta qui sotto: tocca "Apri immagine" per salvarla. Se non si apre da sola, tieni premuto sull'anteprima (mobile) o tasto destro → "Salva immagine con nome" (desktop).
+      </p>
+      <div id="export-single" class="export-single" hidden></div>
+      <div id="export-all" class="export-all" hidden></div>
+      <button id="reset-btn" class="btn btn-text">Nuovo carosello</button>
+    </section>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

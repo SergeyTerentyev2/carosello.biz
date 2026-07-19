@@ -1,0 +1,6 @@
+{
+  "name": "investire-biz-carousel-gemini",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Generatore di caroselli investire.biz — frontend statico + funzione serverless che chiama Gemini tenendo la chiave lato server."
+}
